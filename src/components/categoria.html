@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categoria | StreamFlix</title>
+    <link rel="stylesheet" href="../Styles/movie.css">
+    <link rel="stylesheet" href="../Styles/pagination.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #000000;
+            --netflix-red: #991818;
+            --gray-base: #3b3737;
+            --glass: rgba(255, 255, 255, 0.1);
+            --white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--black);
+            color: var(--white);
+            overflow-x: hidden;
+        }
+
+        header {
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0));
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-login {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--netflix-red);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        nav a {
+            color: var(--white);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--netflix-red);
+        }
+
+        .admin-link {
+            color: var(--netflix-red) !important;
+            font-weight: 600;
+        }
+
+        .back-btn {
+            padding: 10px 20px;
+            background: var(--netflix-red);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 2rem;
+            transition: background 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #cc0d0d;
+        }
+
+        .category-hero {
+            padding: 60px 40px;
+            background: linear-gradient(135deg, rgba(153, 24, 24, 0.3), rgba(0, 0, 0, 0.8));
+            margin-bottom: 3rem;
+        }
+
+        .category-hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .category-hero p {
+            font-size: 1.2rem;
+            color: #ccc;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin: 40px;
+            text-align: center;
+            color: var(--netflix-red);
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            padding: 40px;
+            margin-bottom: 100px;
+        }
+
+        .item {
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            border-radius: 8px;
+            aspect-ratio: 2/3;
+            background: #3b3737;
+        }
+
+        .item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .item:hover img {
+            transform: scale(1.05);
+        }
+
+        .item-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .item:hover .item-overlay {
+            opacity: 1;
+        }
+
+        .item-overlay span {
+            color: white;
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        .empty-state h2 {
+            color: var(--netflix-red);
+            margin-bottom: 1rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+        }
+
+        /* --- MODAL DE DETALHES --- */
+        #details-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10002;
+            padding: 20px;
+        }
+        .details-content {
+            background: #111;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            max-width: 900px;
+            width: 100%;
+            padding: 20px;
+            position: relative;
+        }
+        .details-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .details-body {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 20px;
+        }
+        .details-body img {
+            width: 100%;
+            border-radius: 12px;
+            object-fit: cover;
+            aspect-ratio: 2/3;
+        }
+        .details-info h2 { margin-bottom: 10px; }
+        .details-info p { color: #cfcfcf; line-height: 1.5; margin-bottom: 16px; }
+        /* --- NOVA CLASSE BOTÃO REFINADO --- */
+        .btn-watch-premium {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #e50914 0%, #b20710 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
+            text-transform: uppercase;
+        }
+
+        .btn-watch-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(229, 9, 20, 0.6);
+            background: linear-gradient(135deg, #ff1f1f 0%, #d40e14 100%);
+        }
+
+        .btn-watch-premium svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        @media (max-width: 700px) {
+            .details-body { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-login">WS FLIX</div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="filmes.html"> 🎥 Filmes</a></li>
+                <li><a href="series.html">🎞️ Séries</a></li>
+                <li><a href="#contato">Contato</a></li>
+                <li><a href="login-admin.html" class="admin-link" style="display: none;">⚙️ Admin</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="category-hero">
+        <a href="../index.html" class="back-btn">← Voltar</a>
+        <h1 id="category-title">Carregando...</h1>
+        <p id="category-desc">Conteúdo da categoria personalizada</p>
+    </div>
+
+    <h2 class="section-title">Conteúdo</h2>
+    <div class="content-grid" id="category-grid">
+        <div class="loading">Carregando items...</div>
+    </div>
+
+    <div id="details-modal" onclick="if(event.target.id==='details-modal'){closeDetails();}">
+        <div class="details-content">
+            <button class="details-close" onclick="closeDetails()">✕</button>
+            <div class="details-body">
+                <img id="details-image" src="" alt="">
+                <div class="details-info">
+                    <h2 id="details-title"></h2>
+                    <p id="details-summary">Resumo não disponível.</p>
+                    
+                    <a id="details-watch" href="#" target="_blank" class="btn-watch-premium">
+                        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> 
+                        Assistir Agora
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/apiConfig.js"></script>
+    <script src="../js/adminManager.js"></script>
+    <script src="../js/adminVisibility.js"></script>
+    <script src="../js/categoryPersistence.js"></script>
+    <script src="../js/categoriesMenu.js"></script>
+    <script>
+        // Obter ID da categoria da URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const categoryId = urlParams.get('id');
+
+        console.log('[Categoria] categoryId:', categoryId);
+
+        // Obter dados da API
+        async function getCategories() {
+            try {
+                const base = window.API_BASE || '/api';
+                const res = await fetch(`${base}/categories`);
+                if (!res.ok) return [];
+                const data = await res.json();
+                return Array.isArray(data) ? data : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        async function getCategoryItems(categoryId) {
+            try {
+                const base = window.API_BASE || '/api';
+                const res = await fetch(`${base}/categories/${categoryId}/items`);
+                if (!res.ok) return [];
+                const data = await res.json();
+                return Array.isArray(data) ? data : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        // Carregar conteúdo da categoria
+        async function loadCategoryContent() {
+            if (!categoryId) {
+                document.getElementById('category-grid').innerHTML = '<div class="empty-state"><h2>Categoria não especificada</h2></div>';
+                return;
+            }
+
+            const categories = await getCategories();
+            const category = categories.find(c => c.id === categoryId);
+
+            if (!category) {
+                document.getElementById('category-grid').innerHTML = '<div class="empty-state"><h2>Categoria não encontrada</h2></div>';
+                return;
+            }
+
+            // Atualizar título
+            // Atualizar título
+            const iconDisplay = category.icon ? `${category.icon} ` : '';
+            document.getElementById('category-title').textContent = `${iconDisplay}${category.name}`;
+            document.title = `${category.name} | StreamFlix`;
+
+            // Carregar items
+            const items = await getCategoryItems(categoryId);
+            console.log('[Categoria] Items encontrados via API:', items);
+
+            const grid = document.getElementById('category-grid');
+
+            if (items.length === 0) {
+                grid.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><h2>Nenhum item nesta categoria</h2><p>Volte mais tarde para conferir novidades!</p></div>';
+                return;
+            }
+
+            grid.innerHTML = items.map(item => `
+                <div class="item" onclick="openDetailsFromEncoded('${encodeURIComponent(JSON.stringify({
+                    title: "" + item.title,
+                    image: item.image,
+                    summary: item.summary || item.description || '',
+                    url: item.url
+                }))}')">
+                    <img src="${item.image}" alt="${item.title}" onerror="this.src='https://via.placeholder.com/150x225?text=Sem+Imagem'">
+                    <div class="item-overlay"><span>${item.title}</span></div>
+                </div>
+            `).join('');
+        }
+
+        // Função para abrir o player
+        function abrirPlayer(nome, url) {
+            console.log('abrirPlayer (Iframe) chamado:', { nome, url });
+            
+            if (!url) {
+                alert('❌ URL do vídeo não disponível');
+                return;
+            }
+            
+            // Como categoria.html não tem o modal de vídeo embutido ainda, precisamos verificar ou criar
+            // Mas o template original NÃO tinha #video-modal.
+            // Vou verificar se existe #video-modal no HTML antes de prosseguir.
+            // Oops, olhando o arquivo categoria.html (lido anteriormente), ele NÃO tem a div #video-modal!
+            // Vou adicionar a lógica que injeta o modal dinamicamente OU adicionar a div no HTML.
+            // Para ser consistente, vou esperar que a div já exista ou vou adicioná-la.
+            // Espere, o arquivo `series.html` e `filmes.html` tinham o modal. `categoria.html` NÃO TINHA!
+            // Então, preciso adicionar a DIV do modal no HTML também.
+            
+            // MUDANÇA DE PLANO: Vou adicionar o HTML do modal via JS se não existir, é mais seguro.
+            
+            let modal = document.getElementById('video-modal');
+            if (!modal) {
+                const modalHtml = `
+                    <div id="video-modal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:flex;justify-content:center;align-items:center;z-index:10001;">
+                        <div class="video-container" style="width:100%;height:100%;position:relative;background:#000;">
+                            <span class="close-video" onclick="document.getElementById('video-modal').style.display='none';document.getElementById('main-player').src='';document.body.style.overflow='auto';" style="position:absolute;top:20px;right:30px;font-size:1.5rem;cursor:pointer;color:white;z-index:10002;background:rgba(0,0,0,0.5);padding:5px 15px;border-radius:50px;">VOLTAR ✕</span>
+                            <iframe id="main-player" src="" allow="autoplay; fullscreen" allowfullscreen style="width:100%;height:100%;border:none;"></iframe>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                modal = document.getElementById('video-modal');
+            }
+            
+            const iframe = document.getElementById('main-player');
+            iframe.src = url;
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Modal de detalhes
+        let currentDetails = null;
+
+        function openDetails(data) {
+            currentDetails = data;
+            document.getElementById('details-title').textContent = data.title || 'Título não disponível';
+            document.getElementById('details-image').src = data.image || 'https://via.placeholder.com/200x300?text=Sem+Imagem';
+            document.getElementById('details-image').alt = data.title || 'Sem título';
+            const summary = data.summary && data.summary.trim() ? data.summary : 'Resumo não disponível.';
+            document.getElementById('details-summary').textContent = summary;
+            
+            // Configura o link direto
+            const watchBtn = document.getElementById('details-watch');
+            
+            watchBtn.removeAttribute('target');
+            watchBtn.href = "#";
+
+            if (data.url) {
+                watchBtn.style.display = 'inline-flex';
+                watchBtn.onclick = (e) => {
+                     e.preventDefault();
+                     closeDetails();
+                     abrirPlayer(data.title, data.url);
+                };
+            } else {
+                watchBtn.style.display = 'none';
+            }
+
+            document.getElementById('details-modal').style.display = 'flex';
+        }
+
+        function openDetailsFromEncoded(encoded) {
+            try {
+                const data = JSON.parse(decodeURIComponent(encoded));
+                openDetails(data);
+            } catch (e) {
+                console.error('Erro ao abrir detalhes:', e);
+            }
+        }
+
+        function closeDetails() {
+            document.getElementById('details-modal').style.display = 'none';
+            currentDetails = null;
+        }
+
+        // Removed old event listener
+
+        // Carregar ao abrir página
+        window.addEventListener('load', loadCategoryContent);
+
+        // Monitora mudanças no localStorage
+        // Monitora a cada 5 segundos se há mudanças
+        setInterval(async () => {
+            const items = await getCategoryItems(categoryId);
+            const currentCount = document.querySelectorAll('#category-grid .item').length;
+
+            if (items.length !== currentCount) {
+                console.log('[Categoria] Mudança detectada periodicamente, recarregando');
+                loadCategoryContent();
+            }
+        }, 5000);
+
+        // Recarrega quando volta para a página
+        window.addEventListener('pageshow', () => {
+            console.log('[Categoria] pageshow disparado, recarregando conteúdo');
+            loadCategoryContent();
+        });
+
+        // Recarrega quando a página fica visível novamente
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                console.log('[Categoria] Página visível novamente, recarregando conteúdo');
+                loadCategoryContent();
+            }
+        });
+    </script>
+</body>
+</html>

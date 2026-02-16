@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Categories</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .warning {
+            color: orange;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Debug Categories e Items</h1>
+        
+        <div class="section">
+            <h2>1. Verificar localStorage</h2>
+            <button onclick="checkLocalStorage()">Ver localStorage</button>
+            <pre id="local-storage-output"></pre>
+        </div>
+
+        <div class="section">
+            <h2>2. Adicionar Categoria de Teste</h2>
+            <button onclick="testAddCategory()">Adicionar "Animes 🎌"</button>
+            <button onclick="testAddCategory2()">Adicionar "Documentários 📚"</button>
+            <pre id="add-category-output"></pre>
+        </div>
+
+        <div class="section">
+            <h2>3. Listar Categorias</h2>
+            <button onclick="testGetCategories()">Listar Categorias</button>
+            <pre id="list-categories-output"></pre>
+        </div>
+
+        <div class="section">
+            <h2>4. Adicionar Item à Categoria</h2>
+            <button onclick="testAddItemToCategory()">Adicionar Item ao Animes</button>
+            <pre id="add-item-output"></pre>
+        </div>
+
+        <div class="section">
+            <h2>5. Listar Items de uma Categoria</h2>
+            <button onclick="testGetCategoryItems()">Listar Items do Animes</button>
+            <pre id="list-items-output"></pre>
+        </div>
+
+        <div class="section">
+            <h2>6. Testar Storage Keys</h2>
+            <button onclick="testStorageKeys()">Verificar Storage Keys</button>
+            <pre id="storage-keys-output"></pre>
+        </div>
+
+        <div class="section">
+            <h2>7. Limpar localStorage</h2>
+            <button onclick="clearAllData()">⚠️ Limpar TUDO</button>
+            <button onclick="resetToDefault()">🔄 Reinicializar com Padrões</button>
+            <pre id="clear-output"></pre>
+        </div>
+    </div>
+
+    <script src="../js/adminManager.js"></script>
+    <script>
+        function checkLocalStorage() {
+            const output = document.getElementById('local-storage-output');
+            const data = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('streamflix_')) {
+                    const value = localStorage.getItem(key);
+                    data[key] = value.length > 200 ? value.substring(0, 200) + '...' : value;
+                }
+            }
+            output.textContent = JSON.stringify(data, null, 2);
+        }
+
+        function testAddCategory() {
+            const output = document.getElementById('add-category-output');
+            try {
+                const result = adminDataManager.addCategory({
+                    name: 'Animes',
+                    icon: '🎌'
+                });
+                output.innerHTML = `<span class="${result.success ? 'success' : 'error'}">
+                    ${result.success ? '✓' : '✗'} ${result.message}
+                </span><br><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                setTimeout(checkLocalStorage, 100);
+            } catch (err) {
+                output.innerHTML = `<span class="error">✗ Erro: ${err.message}</span><br><pre>${err.stack}</pre>`;
+            }
+        }
+
+        function testAddCategory2() {
+            const output = document.getElementById('add-category-output');
+            try {
+                const result = adminDataManager.addCategory({
+                    name: 'Documentários',
+                    icon: '📚'
+                });
+                output.innerHTML = `<span class="${result.success ? 'success' : 'error'}">
+                    ${result.success ? '✓' : '✗'} ${result.message}
+                </span><br><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                setTimeout(checkLocalStorage, 100);
+            } catch (err) {
+                output.innerHTML = `<span class="error">✗ Erro: ${err.message}</span><br><pre>${err.stack}</pre>`;
+            }
+        }
+
+        function testGetCategories() {
+            const output = document.getElementById('list-categories-output');
+            try {
+                const categories = adminDataManager.getCategories();
+                output.innerHTML = `<span class="success">✓ Categorias encontradas: ${categories.length}</span><br><pre>${JSON.stringify(categories, null, 2)}</pre>`;
+            } catch (err) {
+                output.innerHTML = `<span class="error">✗ Erro: ${err.message}</span><br><pre>${err.stack}</pre>`;
+            }
+        }
+
+        function testAddItemToCategory() {
+            const output = document.getElementById('add-item-output');
+            try {
+                const result = adminDataManager.addItemToCategory('animes', {
+                    title: 'Death Note',
+                    image: 'https://via.placeholder.com/200x300?text=Death+Note',
+                    url: '#'
+                });
+                output.innerHTML = `<span class="${result.success ? 'success' : 'error'}">
+                    ${result.success ? '✓' : '✗'} ${result.message}
+                </span><br><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                setTimeout(() => {
+                    testGetCategoryItems();
+                    checkLocalStorage();
+                }, 100);
+            } catch (err) {
+                output.innerHTML = `<span class="error">✗ Erro: ${err.message}</span><br><pre>${err.stack}</pre>`;
+            }
+        }
+
+        function testGetCategoryItems() {
+            const output = document.getElementById('list-items-output');
+            try {
+                const items = adminDataManager.getCategoryItems('animes');
+                output.innerHTML = `<span class="success">✓ Items encontrados: ${items.length}</span><br><pre>${JSON.stringify(items, null, 2)}</pre>`;
+            } catch (err) {
+                output.innerHTML = `<span class="error">✗ Erro: ${err.message}</span><br><pre>${err.stack}</pre>`;
+            }
+        }
+
+        function testStorageKeys() {
+            const output = document.getElementById('storage-keys-output');
+            try {
+                const categories = adminDataManager.getCategories();
+                const keys = {};
+                categories.forEach(cat => {
+                    const storageKey = cat.storageKey;
+                    const data = localStorage.getItem(storageKey);
+                    keys[cat.id] = {
+                        name: cat.name,
+                        storageKey: storageKey,
+                        saved: data !== null,
+                        itemCount: data ? JSON.parse(data).length : 0,
+                        rawData: data
+                    };
+                });
+                output.innerHTML = `<pre>${JSON.stringify(keys, null, 2)}</pre>`;
+            } catch (err) {
+                output.innerHTML = `<span class="error">✗ Erro: ${err.message}</span><br><pre>${err.stack}</pre>`;
+            }
+        }
+
+        function clearAllData() {
+            const output = document.getElementById('clear-output');
+            if (confirm('Tem certeza? Isto vai limpar TODOS os dados!')) {
+                localStorage.clear();
+                output.innerHTML = '<span class="success">✓ localStorage limpo!</span>';
+                setTimeout(checkLocalStorage, 100);
+            }
+        }
+
+        function resetToDefault() {
+            const output = document.getElementById('clear-output');
+            localStorage.clear();
+            adminDataManager.initializeData();
+            output.innerHTML = '<span class="success">✓ Dados reinicializados com padrão!</span>';
+            setTimeout(checkLocalStorage, 100);
+        }
+
+        // Verificar localStorage ao carregar a página
+        window.addEventListener('load', () => {
+            checkLocalStorage();
+        });
+    </script>
+</body>
+</html>

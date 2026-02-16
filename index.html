@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamFlix | Premium</title>
+    <link rel="stylesheet" href="src/Styles/movie.css">
+    <link rel="stylesheet" href="src/Styles/pagination.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;700&display=swap" rel="stylesheet">
+
+     <style>
+        
+        /* --- VARIÁVEIS E CORES --- */
+        :root {
+            --black: #000000;
+            --netflix-red: #991818;
+            --gray-base: #3b3737;
+            --glass: rgba(255, 255, 255, 0.1);
+            --white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--black);
+            color: var(--white);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* --- TELA DE LOGIN (MODERNA) --- */
+        #auth-screen {
+            position: fixed;
+            width: 100%;
+            height: 100vh;
+            background: radial-gradient(circle at top right, #3b3737, #000);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: transform 0.8s cubic-bezier(0.87, 0, 0.13, 1);
+        }
+
+        .login-box {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        .logo-login {
+            color: var(--netflix-red);
+            font-weight: 700;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 30px;
+            letter-spacing: -1px;
+        }
+
+        .input-modern {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: white;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-modern:focus { border-color: var(--netflix-red); }
+
+        .btn-cta {
+            width: 100%;
+            padding: 15px;
+            background: var(--netflix-red);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-cta:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(153, 24, 24, 0.4); }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        header {
+            position: fixed;
+            top: 0; width: 100%;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+        }
+
+        .nav-links { list-style: none; display: flex; gap: 30px; }
+        .nav-links a { color: white; text-decoration: none; font-weight: 300; transition: 0.3s; }
+        .nav-links a:hover { color: var(--netflix-red); }
+
+        /* --- SEÇÕES --- */
+        .section-title { margin-bottom: 30px; font-weight: 700; font-size: 1.8rem; }
+        
+        section { padding: 100px 5% 50px; }
+
+        .hero {
+            height: 85vh;
+            background:
+                radial-gradient(120% 80% at 50% 20%, rgba(0, 0, 0, 0.35), transparent 60%),
+                linear-gradient(180deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.35) 40%, rgba(0, 0, 0, 0.9) 100%),
+                url('/src/images/bg.png');
+            background-size: cover;
+            background-position: center top;
+            background-repeat: no-repeat;
+            box-shadow: inset 0 0 160px rgba(0, 0, 0, 0.55);
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-content h1 { font-size: 4rem; font-weight: 700; line-height: 1; margin-bottom: 20px; }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .item-card {
+            position: relative;
+            aspect-ratio: 2/3;
+            background: var(--gray-base);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .item-card:hover { transform: scale(1.08) translateY(-10px); z-index: 5; }
+        .item-card img { width: 100%; height: 100%; object-fit: cover; }
+
+        .item-overlay {
+            position: absolute;
+            bottom: 0; width: 100%; height: 40%;
+            background: linear-gradient(transparent, black);
+            display: flex;
+            align-items: flex-end;
+            padding: 15px;
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        .item-card:hover .item-overlay { opacity: 1; }
+
+        /* --- PLAYER IN-PAGE (INVISÍVEL) --- */
+        #video-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; /* Fundo preto puro */
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+        }
+
+        .video-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: #000;
+        }
+
+        /* Iframe ocupa tudo e fica sem bordas */
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .close-video { 
+            position: absolute; 
+            top: 20px; 
+            right: 30px; 
+            font-size: 1.5rem; 
+            cursor: pointer; 
+            color: white; 
+            z-index: 10002;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 15px;
+            border-radius: 50px;
+            transition: 0.3s;
+        }
+        .close-video:hover { background: var(--netflix-red); }
+
+        footer { padding: 50px 5%; border-top: 1px solid var(--gray-base); text-align: center; color: #777; }
+
+        /* --- MODAL DE DETALHES --- */
+        #details-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10002;
+            padding: 20px;
+        }
+        .details-content {
+            background: #111;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            max-width: 900px;
+            width: 100%;
+            padding: 20px;
+            position: relative;
+        }
+        .details-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .details-body {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 20px;
+        }
+        .details-body img {
+            width: 100%;
+            border-radius: 12px;
+            object-fit: cover;
+            aspect-ratio: 2/3;
+        }
+        .details-info h2 { margin-bottom: 10px; }
+        .details-info p { color: #cfcfcf; line-height: 1.5; margin-bottom: 16px; }
+        /* --- NOVA CLASSE BOTÃO REFINADO --- */
+        .btn-watch-premium {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #e50914 0%, #b20710 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
+            text-transform: uppercase;
+        }
+
+        .btn-watch-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(229, 9, 20, 0.6);
+            background: linear-gradient(135deg, #ff1f1f 0%, #d40e14 100%);
+        }
+
+        .btn-watch-premium svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        @media (max-width: 700px) {
+            .details-body { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="auth-screen">
+        <div class="login-box">
+            <h1 class="logo-login">WS<span>FLIX</span></h1>
+            <input type="text" id="login-username" placeholder="Usuário" class="input-modern">
+            <input type="password" id="login-password" placeholder="Senha" class="input-modern">
+            <button class="btn-cta" onclick="acessarSite()">Entrar</button>
+            <button class="btn-cta" style="background:transparent; color:#aaa; margin-top:10px;" onclick="acessarSite()">Entrar como convidado</button>
+        </div>
+    </div>
+
+    <div id="main-content" style="opacity:0">
+        <header>
+            <div class="logo-login" style="font-size: 1.5rem; margin:0;">WS FLIX</div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="src/components/filmes.html">Filmes</a></li>
+                    <li><a href="src/components/series.html">Séries</a></li>
+                    <div id="dynamic-categories-nav" style="display: inline-flex; gap: 1rem;"></div>
+                    <li><a href="#contato">Contato</a></li>
+                    <li><a href="src/components/login-admin.html" class="admin-link" style="color: #e50914; font-weight: 600; display: none;">⚙️ Admin</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <h1 style="color: white; font-size: 4rem; font-weight: 700; line-height: 1; margin-bottom: 20px;">Ação e <br>Aventura.</h1>
+                <p style="font-weight:300; margin-bottom: 20px; color: #ccc;">O melhor do cinema mundial na sua tela.</p>
+                <button class="btn-cta" style="width:200px" onclick="abrirPlayer('Destaque', 'https://www.youtube.com/embed/Way9Dexny3w')">Assistir Agora</button>
+            </div>
+        </section>
+        <br>
+        <br>
+        <section id="filmes">
+            <h2 class="section-title">Filmes Populares</h2>
+            <div class="content-grid" id="filmes-grid"></div>
+        </section>
+
+        <section id="series">
+            <h2 class="section-title">Séries Populares</h2>
+            <div class="content-grid" id="series-grid"></div>
+        </section>
+
+        <footer id="contato">
+            <p>wesleyicloud6@outlook.com© 2026 - Todos os direitos reservados.</p>
+        </footer>
+    </div>
+
+    <div id="video-modal">
+        <div class="video-container">
+            <span class="close-video" onclick="fecharPlayer()">VOLTAR ✕</span>
+            <iframe id="main-player" src="" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <div id="details-modal" onclick="if(event.target.id==='details-modal'){closeDetails();}">
+        <div class="details-content">
+            <button class="details-close" onclick="closeDetails()">✕</button>
+            <div class="details-body">
+                <img id="details-image" src="" alt="">
+                <div class="details-info">
+                    <h2 id="details-title"></h2>
+                    <p id="details-summary">Resumo não disponível.</p>
+                    
+                    <a id="details-watch" href="#" target="_blank" class="btn-watch-premium">
+                        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> 
+                        Assistir Agora
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="src/js/apiConfig.js"></script>
+    <script src="src/js/MediaCatalogManager.js"></script>
+    <script src="src/js/auth.js"></script>
+    <script src="src/js/adminManager.js"></script>
+    <script src="src/js/adminVisibility.js"></script>
+    <script src="src/js/categoryPersistence.js"></script>
+    <script src="src/js/categoriesMenu.js"></script>
+
+    <script>
+        // Carrega dados da API ou usa os padrões
+        async function loadData() {
+            try {
+                console.log('[loadData] Tentando carregar dados da API...');
+                const base = window.API_BASE || '/api';
+                const [filmsRes, seriesRes] = await Promise.all([
+                    fetch(`${base}/films`, { headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' } }),
+                    fetch(`${base}/series`, { headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' } })
+                ]);
+
+                if (filmsRes.ok) {
+                    const films = await filmsRes.json();
+                    console.log(`[loadData] ${films.length} filmes carregados.`);
+                    if (Array.isArray(films)) window.filmsData = films;
+                } else {
+                    console.error('[loadData] Erro ao carregar filmes:', filmsRes.status);
+                }
+                
+                if (seriesRes.ok) {
+                    const series = await seriesRes.json();
+                    console.log(`[loadData] ${series.length} séries carregadas.`);
+                    if (Array.isArray(series)) window.seriesData = series;
+                } else {
+                    console.error('[loadData] Erro ao carregar séries:', seriesRes.status);
+                }
+            } catch (e) {
+                console.error('[loadData] Exceção ao carregar dados:', e);
+            }
+        }
+        
+        // 1. Função de Acesso
+        function acessarSite() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            const auth = document.getElementById('auth-screen');
+            const content = document.getElementById('main-content');
+            
+            let isAdmin = false;
+            
+            // Verifica se é admin
+            if (username && password && typeof authManager !== 'undefined') {
+                const result = authManager.login(username, password);
+                
+                if (result.success) {
+                    // É admin - faz login e atualiza visibilidade do botão
+                    isAdmin = true;
+                    
+                    // Mostra mensagem de boas-vindas
+                    setTimeout(() => {
+                        const toast = document.createElement('div');
+                        toast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 15px 25px; border-radius: 8px; font-weight: 600; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+                        toast.textContent = '✓ Bem-vindo, Admin!';
+                        document.body.appendChild(toast);
+                        
+                        setTimeout(() => {
+                            toast.remove();
+                        }, 3000);
+                    }, 800);
+                    
+                    if (typeof updateAdminVisibility === 'function') {
+                        setTimeout(updateAdminVisibility, 700);
+                    }
+                }
+            }
+            
+            // Acessa o site (independente de ser admin ou não)
+            auth.style.transform = "translateY(-100%)";
+            setTimeout(() => {
+                auth.style.display = "none";
+                content.style.opacity = "1";
+                content.style.transition = "opacity 1s";
+            }, 600);
+        }
+
+        // 2. Lógica do Player embutido
+        function abrirPlayer(nome, url) {
+            console.log('abrirPlayer (Iframe) chamado:', { nome, url });
+            
+            if (!url) {
+                alert('❌ URL do vídeo não disponível');
+                return;
+            }
+            
+            const modal = document.getElementById('video-modal');
+            const iframe = document.getElementById('main-player');
+            
+            if (!modal || !iframe) {
+                console.error('Elementos do modal não encontrados');
+                return;
+            }
+
+            // Define a URL no iframe
+            iframe.src = url;
+            
+            // Exibe o modal
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Trava a rolagem do fundo
+        }
+
+        function fecharPlayer() {
+            const modal = document.getElementById('video-modal');
+            const iframe = document.getElementById('main-player');
+            
+            modal.style.display = 'none';
+            iframe.src = ""; // Limpa o vídeo para parar o som
+            
+            // Destrava o scroll
+            document.body.style.overflow = 'auto';
+        }
+
+        // 2.1 Modal de detalhes
+        let currentDetails = null;
+
+        function openDetails(data) {
+            currentDetails = data;
+            document.getElementById('details-title').textContent = data.title || 'Título não disponível';
+            document.getElementById('details-image').src = data.image || 'https://via.placeholder.com/200x300?text=Sem+Imagem';
+            document.getElementById('details-image').alt = data.title || 'Sem título';
+            const summary = data.summary && data.summary.trim() ? data.summary : 'Resumo não disponível.';
+            document.getElementById('details-summary').textContent = summary;
+            
+            // Configura o botão para abrir o player interno
+            const watchBtn = document.getElementById('details-watch');
+            
+            // Remove comportamento de link externo
+            watchBtn.removeAttribute('target');
+            watchBtn.href = "#";
+            
+            if (data.url) {
+                watchBtn.style.display = 'inline-flex';
+                watchBtn.onclick = (e) => {
+                     e.preventDefault();
+                     closeDetails();
+                     abrirPlayer(data.title, data.url);
+                };
+            } else {
+                watchBtn.style.display = 'none';
+            }
+
+            document.getElementById('details-modal').style.display = 'flex';
+        }
+
+        function openDetailsFromEncoded(encoded) {
+            try {
+                const data = JSON.parse(decodeURIComponent(encoded));
+                openDetails(data);
+            } catch (e) {
+                console.error('Erro ao abrir detalhes:', e);
+            }
+        }
+
+        function closeDetails() {
+            document.getElementById('details-modal').style.display = 'none';
+            currentDetails = null;
+        }
+
+        // Removed old event listener since we are now using native href behavior
+
+        // 3. Inicializar catálogos na página inicial
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Adiciona evento de Enter nos campos de login
+            const loginUsername = document.getElementById('login-username');
+            const loginPassword = document.getElementById('login-password');
+            
+            if (loginUsername && loginPassword) {
+                loginPassword.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        acessarSite();
+                    }
+                });
+                
+                loginUsername.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        loginPassword.focus();
+                    }
+                });
+            }
+            
+            await loadData();
+
+            // Todos os filmes com 50 por página
+            const filmManager = new MediaCatalogManager({
+                items: window.filmsData || [],
+                itemsPerPage: 50,
+                containerSelector: '#filmes-grid',
+                renderItem: (film) => {
+                    const payload = encodeURIComponent(JSON.stringify({
+                        title: "" + film.title,
+                        image: film.image,
+                        summary: film.summary || film.description || '',
+                        url: film.url
+                    }));
+                    return `
+                    <div class="item-card" onclick="openDetailsFromEncoded('${payload}')">
+                        <img src="${film.image}" alt="${film.title}">
+                        <div class="item-overlay"><span>${film.title}</span></div>
+                    </div>
+                `;
+                }
+            });
+            filmManager.initialize();
+
+            // Todas as séries com 50 por página
+            const seriesManager = new MediaCatalogManager({
+                items: window.seriesData || [],
+                itemsPerPage: 50,
+                containerSelector: '#series-grid',
+                renderItem: (serie) => {
+                    const payload = encodeURIComponent(JSON.stringify({
+                        title: "" + serie.title,
+                        image: serie.image,
+                        summary: serie.summary || serie.description || '',
+                        url: serie.url
+                    }));
+                    return `
+                    <div class="item-card" onclick="openDetailsFromEncoded('${payload}')">
+                        <img src="${serie.image}" alt="${serie.title}">
+                        <div class="item-overlay"><span>${serie.title}</span></div>
+                    </div>
+                `;
+                }
+            });
+            seriesManager.initialize();
+        });
+
+        // 4. Scroll Suave
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                
+                // Apenas aplica scroll suave para links internos (#)
+                if (href && href.startsWith('#')) {
+                    e.preventDefault();
+                    const targetId = href.substring(1);
+                    const targetSection = document.getElementById(targetId);
+                    if (targetSection) {
+                        window.scrollTo({
+                            top: targetSection.offsetTop - 50,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+                // Links externos como "filmes.html" funcionarão normalmente
+            });
+        });
+    </script>
+</body>
+</html>

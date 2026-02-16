@@ -1,0 +1,24 @@
+{
+  "name": "streamflix-backend",
+  "version": "1.0.0",
+  "description": "Backend simples para StreamFlix",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node start-dev.js",
+    "dev:server": "node server.js",
+    "dev:vite": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "vercel-build": "vite build"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.36.2",
+    "express": "^4.19.2",
+    "mongodb": "^7.1.0"
+  },
+  "devDependencies": {
+    "vite": "^5.2.0"
+  }
+}

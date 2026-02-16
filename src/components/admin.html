@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - StreamFlix</title>
+    <link rel="stylesheet" href="../Styles/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header Admin -->
+    <header class="admin-header">
+        <div class="header-content">
+            <h1 class="logo">🎬 StreamFlix Admin</h1>
+            <div class="header-actions">
+                <span class="admin-user">👤 <span id="username-display">Admin</span></span>
+                <button id="btn-change-password" class="btn-secondary">🔑 Alterar Senha</button>
+                <button id="btn-logout" class="btn-danger">🚪 Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-section="categories">
+                    🗂️ Categorias
+                </button>
+                <button class="nav-btn" data-section="stats">
+                    📊 Estatísticas
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Seção de Categorias -->
+            <section id="section-categories" class="content-section active">
+                <!-- Lista de categorias -->
+                <div id="categories-view">
+                    <div class="section-header">
+                        <h2>Gerenciar Categorias</h2>
+                        <button id="btn-add-category" class="btn-primary">➕ Adicionar Categoria</button>
+                    </div>
+
+                    <div class="categories-info">
+                        <p>Crie categorias personalizadas como Animes, Desenhos, Documentários, etc.</p>
+                        <p><strong>Nota:</strong> As categorias padrão (Filmes e Séries) não podem ser excluídas.</p>
+                        <div style="margin-top: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                            <button id="btn-export-categories" class="btn-secondary">💾 Exportar Categorias (arquivo)</button>
+                            <small style="color: var(--gray-dark, #9aa0a6);">Após exportar, substitua o arquivo src/js/categoriesData.js pelo baixado.</small>
+                        </div>
+                    </div>
+
+                    <div class="categories-list" id="categories-list">
+                        <!-- Categorias serão carregadas aqui -->
+                    </div>
+                </div>
+
+                <!-- Conteúdo da categoria selecionada -->
+                <div id="category-content" style="display: none;">
+                    <div style="margin-bottom: 2rem;">
+                        <button class="btn-secondary" onclick="document.getElementById('categories-view').style.display='block'; document.getElementById('category-content').style.display='none';">← Voltar às Categorias</button>
+                    </div>
+                    
+                    <div class="section-header">
+                        <h3 id="category-content-title">Conteúdo</h3>
+                        <button id="btn-add-category-item" class="btn-primary">➕ Adicionar Item</button>
+                    </div>
+
+                    <div class="search-box">
+                        <input type="text" id="search-category-items" placeholder="🔍 Buscar..." class="search-input">
+                    </div>
+
+                    <div class="items-grid" id="category-items-grid">
+                        <!-- Itens da categoria serão carregados aqui -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seção de Estatísticas -->
+            <section id="section-stats" class="content-section">
+                <h2>Estatísticas do Sistema</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🎬</div>
+                        <div class="stat-info">
+                            <h3 id="total-films">0</h3>
+                            <p>Total de Filmes</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📺</div>
+                        <div class="stat-info">
+                            <h3 id="total-series">0</h3>
+                            <p>Total de Séries</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-info">
+                            <h3 id="total-items">0</h3>
+                            <p>Total de Conteúdos</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-section">
+                    <h3>Ações Avançadas</h3>
+                    <button id="btn-reset-data" class="btn-warning">⚠️ Restaurar Dados Originais</button>
+                    <button id="btn-back-home" class="btn-secondary">🏠 Voltar ao Site</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal para Adicionar/Editar -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Adicionar Item</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="item-form">
+                <div class="form-group">
+                    <label for="item-title">Título *</label>
+                    <input type="text" id="item-title" required placeholder="Ex: Matrix">
+                </div>
+                <div class="form-group">
+                    <label for="item-image">URL da Imagem *</label>
+                    <input type="url" id="item-image" required placeholder="https://...">
+                    <small>Cole a URL da capa/poster</small>
+                </div>
+                <div class="form-group">
+                    <label for="item-url">URL do Player *</label>
+                    <input type="url" id="item-url" required placeholder="https://playerflixapi.com/...">
+                    <small>Link para assistir o conteúdo</small>
+                </div>
+                <div class="form-group">
+                    <label for="item-summary">Resumo</label>
+                    <textarea id="item-summary" rows="4" placeholder="Resumo do conteúdo..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary modal-close">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Mudar Senha -->
+    <div id="modal-password" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Alterar Senha</h2>
+                <button class="modal-close-pwd">&times;</button>
+            </div>
+            <form id="password-form">
+                <div class="form-group">
+                    <label for="current-password">Senha Atual *</label>
+                    <input type="password" id="current-password" required>
+                </div>
+                <div class="form-group">
+                    <label for="new-password">Nova Senha *</label>
+                    <input type="password" id="new-password" required minlength="4">
+                    <small>Mínimo de 4 caracteres</small>
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password">Confirmar Nova Senha *</label>
+                    <input type="password" id="confirm-password" required minlength="4">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary modal-close-pwd">Cancelar</button>
+                    <button type="submit" class="btn-primary">Alterar Senha</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Adicionar Categoria -->
+    <div id="modal-category" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Adicionar Nova Categoria</h2>
+                <button class="modal-close-cat">&times;</button>
+            </div>
+            <form id="category-form">
+                <div class="form-group">
+                    <label for="category-name">Nome da Categoria *</label>
+                    <input type="text" id="category-name" required placeholder="Ex: Animes, Desenhos, Documentários">
+                </div>
+                <div class="form-group">
+                    <label for="category-icon">Ícone (Emoji) *</label>
+                    <input type="text" id="category-icon" required placeholder="Ex: 🎌 📚 🎭" maxlength="2">
+                    <small>Use um emoji para representar a categoria</small>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary modal-close-cat">Cancelar</button>
+                    <button type="submit" class="btn-primary">Criar Categoria</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast para Notificações -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Scripts -->
+    <script src="../js/apiConfig.js"></script>
+    <script src="../js/filmsData.js"></script>
+    <script src="../js/seriesData.js"></script>
+    <script src="../js/categoriesData.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/adminManager.js"></script>
+    <script src="../js/categoryPersistence.js"></script>
+    <script src="../js/categoriesMenu.js"></script>
+    <script src="../js/adminPanel.js"></script>
+</body>
+</html>

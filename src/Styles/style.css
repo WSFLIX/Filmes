@@ -1,0 +1,148 @@
+/* Configurações Globais */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    scroll-behavior: smooth; /* Animação suave de scroll */
+}
+
+body {
+    background-color: #000000;
+    color: #fff;
+}
+
+/* Menu de Navegação */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 5%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+.logo {
+    font-weight: 700; /* Poppins Bold */
+    font-size: 1.8rem;
+    color: #991818;
+}
+
+.logo span { color: #fff; }
+
+.navbar ul { display: flex; list-style: none; }
+
+.navbar ul li { margin-left: 20px; }
+
+.navbar ul li a {
+    text-decoration: none;
+    color: #fff;
+    font-weight: 300; /* Poppins Light */
+    transition: 0.3s;
+}
+
+.navbar ul li a:hover { color: #991818; }
+
+/* Hero Section */
+.hero {
+    height: 80vh;
+    background: linear-gradient(to right, #000, transparent), url('https://via.placeholder.com/1920x1080');
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    padding: 0 5%;
+}
+
+.hero-content h1 { font-size: 3.5rem; margin-bottom: 10px; }
+.hero-content p { max-width: 500px; color: #ccc; margin-bottom: 20px; }
+
+.btn-play {
+    background-color: #991818;
+    color: #fff;
+    padding: 10px 25px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    border-radius: 4px;
+    transition: 0.3s;
+}
+
+.btn-play:hover { background-color: #3b3737; }
+
+/* Grid de Filmes */
+.content-section { padding: 50px 5%; }
+
+.movie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.card {
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #3b3737;
+    transition: transform 0.3s;
+}
+
+.card:hover { transform: scale(1.05); }
+
+.card img { width: 100%; display: block; }
+
+.card-info {
+    position: absolute;
+    bottom: 0;
+    background: rgba(153, 24, 24, 0.9);
+    width: 100%;
+    text-align: center;
+    padding: 10px 0;
+    opacity: 0;
+    transition: 0.3s;
+}
+
+.card:hover .card-info { opacity: 1; }
+
+/* Modal do Player */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.9);
+}
+
+.modal-content {
+    position: relative;
+    margin: 5% auto;
+    width: 80%;
+    max-width: 800px;
+}
+
+.modal-content iframe {
+    width: 100%;
+    height: 450px;
+}
+
+.close {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    color: #fff;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .hero-content h1 { font-size: 2rem; }
+    .navbar { flex-direction: column; }
+    .navbar ul { margin-top: 15px; }
+}
