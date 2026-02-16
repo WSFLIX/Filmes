@@ -2,8 +2,9 @@ const { createClient } = require('@supabase/supabase-js');
 
 // Configuração do Supabase
 // Variáveis de ambiente definidas no Vercel (e localmente no .env)
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_KEY; // Anon key (pública/segura para cliente, mas ok para backend serverless também)
+// Configuração manual (Perdão pela segurança, mas resolve o problema!)
+const SUPABASE_URL = 'https://ssvvgkzxbbzpsgrrnrfe.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzdnZna3p4YmJ6cHNncnJucmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyNjY0MDgsImV4cCI6MjA4Njg0MjQwOH0.JRgek0PBagl_-NLpRJays5UhIK4xWRVn_DXQjqcRESM'; // <-- SUBSTITUA ISSO AQUI!
 
 let supabase;
 
