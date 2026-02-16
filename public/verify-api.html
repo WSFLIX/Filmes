@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Verification Tool</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #222; color: #fff; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #155724; color: #d4edda; }
+        .error { background: #721c24; color: #f8d7da; }
+        .neutral { background: #333; border: 1px solid #555; }
+        pre { background: #000; padding: 10px; overflow: auto; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>API Verification Tool</h1>
+    <p>This page tests if the Frontend can talk to the Backend.</p>
+    
+    <button onclick="runTests()">RUN DIAGNOSTIC TESTS</button>
+
+    <div id="results"></div>
+
+    <script>
+        function log(message, type = 'neutral') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            document.getElementById('results').appendChild(div);
+        }
+
+        function logObj(data) {
+            const pre = document.createElement('pre');
+            pre.textContent = JSON.stringify(data, null, 2);
+            document.getElementById('results').appendChild(pre);
+        }
+
+        async function runTests() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = ''; // Clear previous
+            log('Starting tests...', 'neutral');
+
+            // TEST 1: Check Current Origin
+            log(`Current Location: ${window.location.href}`, 'neutral');
+            
+            // TEST 2: Basic Endpoint (Health/Debug)
+            try {
+                log('Attempting to fetch /api/debug...', 'neutral');
+                const start = Date.now();
+                const res = await fetch('/api/debug');
+                const time = Date.now() - start;
+                
+                if (res.ok) {
+                    log(`✅ /api/debug responded in ${time}ms (Status: ${res.status})`, 'success');
+                    const data = await res.json();
+                    logObj(data);
+                    
+                    if (data.database && data.database.status === 'Connected Successfully') {
+                        log('✅ Database Connection Verified!', 'success');
+                    } else {
+                        log('❌ Database Connection Failed (Check Supabase credentials in Vercel Settings)', 'error');
+                    }
+                } else {
+                    log(`❌ /api/debug failed (Status: ${res.status})`, 'error');
+                    const text = await res.text();
+                    logObj({ responseText: text });
+                }
+            } catch (e) {
+                log(`❌ Network Error calling /api/debug: ${e.message}`, 'error');
+                log('This usually means the API endpoint does not exist or CORS blocked it.', 'neutral');
+            }
+
+            // TEST 3: Films Endpoint
+            try {
+                log('Attempting to fetch /api/films...', 'neutral');
+                const res = await fetch('/api/films');
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    log(`✅ /api/films responded with ${Array.isArray(data) ? data.length : 0} items`, 'success');
+                } else {
+                    log(`❌ /api/films failed (Status: ${res.status})`, 'error');
+                }
+            } catch (e) {
+                log(`❌ Network Error calling /api/films: ${e.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
