@@ -1,7 +1,7 @@
 const { 
-  getAllFilms, saveAllFilms,
-  getAllSeries, saveAllSeries,
-  getAllCategories, saveAllCategories
+  getFilms, createFilm, 
+  getSeries, createSeries, 
+  getCategories, createCategoryItem, updateCategoryItem, deleteCategoryItem
 } = require('../lib/db');
 
 module.exports = async (req, res) => {
@@ -17,22 +17,20 @@ module.exports = async (req, res) => {
   try {
     // URL format: /api/categories/:id/items/:index
     const pathParts = req.url.split('?')[0].split('/').filter(Boolean);
-    // pathParts = ['api', 'categories', ':id', 'items', ':index']
-    
     const categoryId = pathParts[2];
     const itemIndex = pathParts[4] ? Number(pathParts[4]) : null;
 
     // Redirecionamento para filmes e séries
     if (categoryId === 'films') {
-      return await handleCategoryItems(req, res, getAllFilms, saveAllFilms, itemIndex, 'Filme');
+      return await handleStandardItems(req, res, getFilms, createFilm, itemIndex, 'Filme');
     }
 
     if (categoryId === 'series') {
-      return await handleCategoryItems(req, res, getAllSeries, saveAllSeries, itemIndex, 'Série');
+      return await handleStandardItems(req, res, getSeries, createSeries, itemIndex, 'Série');
     }
 
     // Categorias customizadas
-    const categories = await getAllCategories();
+    const categories = await getCategories();
     const category = categories.find(c => c.id === categoryId);
 
     if (!category) {
@@ -59,29 +57,12 @@ module.exports = async (req, res) => {
         });
       }
 
-      const items = Array.isArray(category.items) ? category.items : [];
-      const exists = items.some(i => i.title === item.title);
-      
-      if (exists) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Já existe um item com este título!' 
-        });
-      }
-
-      items.push({
+      await createCategoryItem(categoryId, {
         title: item.title.trim(),
         image: item.image.trim(),
         url: item.url.trim(),
         summary: item.summary ? String(item.summary).trim() : '',
       });
-
-      // Atualiza a categoria dentro do array de categorias
-      const catIndex = categories.findIndex(c => c.id === categoryId);
-      if (catIndex !== -1) {
-        categories[catIndex] = category;
-        await saveAllCategories(categories);
-      }
 
       return res.status(200).json({ 
         success: true, 
@@ -109,19 +90,14 @@ module.exports = async (req, res) => {
         });
       }
 
-      items[itemIndex] = {
+      const itemToUpdate = items[itemIndex];
+      
+      await updateCategoryItem(itemToUpdate.id, {
         title: item.title.trim(),
         image: item.image.trim(),
         url: item.url.trim(),
         summary: item.summary ? String(item.summary).trim() : '',
-      };
-
-      // Atualiza a categoria dentro do array de categorias
-      const catIndex = categories.findIndex(c => c.id === categoryId);
-      if (catIndex !== -1) {
-        categories[catIndex] = category;
-        await saveAllCategories(categories);
-      }
+      });
 
       return res.status(200).json({ 
         success: true, 
@@ -140,14 +116,8 @@ module.exports = async (req, res) => {
         });
       }
 
-      items.splice(itemIndex, 1);
-
-      // Atualiza a categoria dentro do array de categorias
-      const catIndex = categories.findIndex(c => c.id === categoryId);
-      if (catIndex !== -1) {
-        categories[catIndex] = category;
-        await saveAllCategories(categories);
-      }
+      const itemToDelete = items[itemIndex];
+      await deleteCategoryItem(itemToDelete.id);
 
       return res.status(200).json({ 
         success: true, 
@@ -167,8 +137,9 @@ module.exports = async (req, res) => {
   }
 };
 
-// Helper function para lidar com filmes e séries
-async function handleCategoryItems(req, res, getFn, saveFn, itemIndex, itemType) {
+// Helper function para lidar com filmes e séries (apenas GET e POST nesta rota dinâmica)
+// PUT e DELETE de filmes/séries são feitos pelas rotas diretas /api/films e /api/series
+async function handleStandardItems(req, res, getFn, createFn, itemIndex, itemType) {
   const collection = await getFn();
 
   // GET - Lista itens
@@ -187,77 +158,16 @@ async function handleCategoryItems(req, res, getFn, saveFn, itemIndex, itemType)
       });
     }
 
-    const existing = collection.find(i => i.title === item.title);
-    if (existing) {
-      return res.status(400).json({ 
-        success: false, 
-        message: `Já existe ${itemType === 'Filme' ? 'um filme' : 'uma série'} com este título!` 
-      });
-    }
-
-    collection.push({
+    await createFn({
       title: item.title.trim(),
       image: item.image.trim(),
       url: item.url.trim(),
       summary: item.summary ? String(item.summary).trim() : '',
     });
-
-    await saveFn(collection);
 
     return res.status(200).json({ 
       success: true, 
       message: `${itemType} adicionad${itemType === 'Filme' ? 'o' : 'a'} com sucesso!` 
-    });
-  }
-
-  // PUT - Atualiza item
-  if (req.method === 'PUT' && itemIndex !== null) {
-    const item = req.body;
-    
-    if (!item.title || !item.image || !item.url) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Todos os campos são obrigatórios!' 
-      });
-    }
-    
-    if (Number.isNaN(itemIndex) || itemIndex < 0 || itemIndex >= collection.length) {
-      return res.status(404).json({ 
-        success: false, 
-        message: `${itemType} não encontrad${itemType === 'Filme' ? 'o' : 'a'}!` 
-      });
-    }
-
-    collection[itemIndex] = {
-      title: item.title.trim(),
-      image: item.image.trim(),
-      url: item.url.trim(),
-      summary: item.summary ? String(item.summary).trim() : '',
-    };
-
-    await saveFn(collection);
-
-    return res.status(200).json({ 
-      success: true, 
-      message: `${itemType} atualizad${itemType === 'Filme' ? 'o' : 'a'} com sucesso!` 
-    });
-  }
-
-  // DELETE - Remove item
-  if (req.method === 'DELETE' && itemIndex !== null) {
-    if (Number.isNaN(itemIndex) || itemIndex < 0 || itemIndex >= collection.length) {
-      return res.status(404).json({ 
-        success: false, 
-        message: `${itemType} não encontrad${itemType === 'Filme' ? 'o' : 'a'}!` 
-      });
-    }
-
-    collection.splice(itemIndex, 1);
-    await saveFn(collection);
-
-    return res.status(200).json({ 
-      success: true, 
-      message: `${itemType} excluid${itemType === 'Filme' ? 'o' : 'a'} com sucesso!` 
     });
   }
 

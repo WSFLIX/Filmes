@@ -14,9 +14,8 @@
     "vercel-build": "vite build"
   },
   "dependencies": {
-    "@upstash/redis": "^1.36.2",
-    "express": "^4.19.2",
-    "mongodb": "^7.1.0"
+    "@supabase/supabase-js": "^2.95.3",
+    "express": "^4.19.2"
   },
   "devDependencies": {
     "vite": "^5.2.0"

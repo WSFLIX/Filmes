@@ -1,4 +1,4 @@
-const { getAllFilms, saveAllFilms } = require('./lib/db');
+const { getFilms, createFilm, updateFilm, deleteFilm } = require('./lib/db');
 
 module.exports = async (req, res) => {
   // CORS headers
@@ -13,13 +13,12 @@ module.exports = async (req, res) => {
   try {
     // GET /api/films - Lista todos os filmes
     if (req.method === 'GET') {
-      const films = await getAllFilms();
+      const films = await getFilms();
       return res.status(200).json(films);
     }
 
     // POST /api/films - Adiciona novo filme
     if (req.method === 'POST') {
-      const films = await getAllFilms();
       const film = req.body;
       
       if (!film.title || !film.image || !film.url) {
@@ -29,23 +28,12 @@ module.exports = async (req, res) => {
         });
       }
 
-      // Verifica se já existe
-      if (films.some(f => f.title === film.title)) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Já existe um filme com este título!' 
-        });
-      }
-
-      // Adiciona novo filme
-      films.push({
+      await createFilm({
         title: film.title.trim(),
         image: film.image.trim(),
         url: film.url.trim(),
         summary: film.summary ? String(film.summary).trim() : '',
       });
-
-      await saveAllFilms(films);
 
       return res.status(200).json({ 
         success: true, 
@@ -53,10 +41,13 @@ module.exports = async (req, res) => {
       });
     }
 
-    // PUT /api/films?index=X - Atualiza filme
+    // PUT /api/films?index=X - Atualiza filme (AGORA USA ID, mas vamos suportar index para não quebrar front)
+    // O frontend atual envia INDEX, precisamos mudar para ID ou adaptar.
+    // Como o frontend usa array index, vamos precisar pegar pelo index do array retornado :(
+    // Ou melhor: Vamos assumir que o frontend vai ser atualizado ou faremos um "hack" aqui.
+    // Hack: Pegar todos, achar o do índice X, pegar o ID dele e atualizar.
     if (req.method === 'PUT') {
       const { index } = req.query;
-      const films = await getAllFilms();
       const film = req.body;
 
       if (!film.title || !film.image || !film.url) {
@@ -66,7 +57,9 @@ module.exports = async (req, res) => {
         });
       }
 
+      const films = await getFilms();
       const idx = Number(index);
+      
       if (Number.isNaN(idx) || idx < 0 || idx >= films.length) {
         return res.status(404).json({ 
           success: false, 
@@ -74,14 +67,14 @@ module.exports = async (req, res) => {
         });
       }
 
-      films[idx] = {
+      const filmToUpdate = films[idx];
+      
+      await updateFilm(filmToUpdate.id, {
         title: film.title.trim(),
         image: film.image.trim(),
         url: film.url.trim(),
         summary: film.summary ? String(film.summary).trim() : '',
-      };
-
-      await saveAllFilms(films);
+      });
 
       return res.status(200).json({ 
         success: true, 
@@ -92,7 +85,7 @@ module.exports = async (req, res) => {
     // DELETE /api/films?index=X - Remove filme
     if (req.method === 'DELETE') {
       const { index } = req.query;
-      const films = await getAllFilms();
+      const films = await getFilms();
 
       const idx = Number(index);
       if (Number.isNaN(idx) || idx < 0 || idx >= films.length) {
@@ -102,8 +95,8 @@ module.exports = async (req, res) => {
         });
       }
 
-      films.splice(idx, 1);
-      await saveAllFilms(films);
+      const filmToDelete = films[idx];
+      await deleteFilm(filmToDelete.id);
 
       return res.status(200).json({ 
         success: true, 

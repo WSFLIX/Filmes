@@ -1,4 +1,4 @@
-const { getAllSeries, saveAllSeries } = require('./lib/db');
+const { getSeries, createSeries, updateSeries, deleteSeries } = require('./lib/db');
 
 module.exports = async (req, res) => {
   // CORS headers
@@ -13,13 +13,12 @@ module.exports = async (req, res) => {
   try {
     // GET /api/series - Lista todas as séries
     if (req.method === 'GET') {
-      const series = await getAllSeries();
+      const series = await getSeries();
       return res.status(200).json(series);
     }
 
     // POST /api/series - Adiciona nova série
     if (req.method === 'POST') {
-      const series = await getAllSeries();
       const item = req.body;
       
       if (!item.title || !item.image || !item.url) {
@@ -29,23 +28,12 @@ module.exports = async (req, res) => {
         });
       }
 
-      // Verifica se já existe
-      if (series.some(s => s.title === item.title || s.name === item.title)) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Já existe uma série com este título!' 
-        });
-      }
-
-      // Adiciona nova série
-      series.push({
+      await createSeries({
         title: item.title.trim(),
         image: item.image.trim(),
         url: item.url.trim(),
         summary: item.summary ? String(item.summary).trim() : '',
       });
-
-      await saveAllSeries(series);
 
       return res.status(200).json({ 
         success: true, 
@@ -56,7 +44,6 @@ module.exports = async (req, res) => {
     // PUT /api/series?index=X - Atualiza série
     if (req.method === 'PUT') {
       const { index } = req.query;
-      const series = await getAllSeries();
       const item = req.body;
 
       if (!item.title || !item.image || !item.url) {
@@ -66,7 +53,9 @@ module.exports = async (req, res) => {
         });
       }
 
+      const series = await getSeries();
       const idx = Number(index);
+      
       if (Number.isNaN(idx) || idx < 0 || idx >= series.length) {
         return res.status(404).json({ 
           success: false, 
@@ -74,14 +63,14 @@ module.exports = async (req, res) => {
         });
       }
 
-      series[idx] = {
+      const seriesToUpdate = series[idx];
+      
+      await updateSeries(seriesToUpdate.id, {
         title: item.title.trim(),
         image: item.image.trim(),
         url: item.url.trim(),
         summary: item.summary ? String(item.summary).trim() : '',
-      };
-
-      await saveAllSeries(series);
+      });
 
       return res.status(200).json({ 
         success: true, 
@@ -92,7 +81,7 @@ module.exports = async (req, res) => {
     // DELETE /api/series?index=X - Remove série
     if (req.method === 'DELETE') {
       const { index } = req.query;
-      const series = await getAllSeries();
+      const series = await getSeries();
 
       const idx = Number(index);
       if (Number.isNaN(idx) || idx < 0 || idx >= series.length) {
@@ -102,8 +91,8 @@ module.exports = async (req, res) => {
         });
       }
 
-      series.splice(idx, 1);
-      await saveAllSeries(series);
+      const seriesToDelete = series[idx];
+      await deleteSeries(seriesToDelete.id);
 
       return res.status(200).json({ 
         success: true, 

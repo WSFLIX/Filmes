@@ -1,12 +1,12 @@
 # StreamFlix - Catálogo de Filmes e Séries
 
-Aplicação web para catalogar e organizar filmes e séries, agora com backend serverless hospedado no Vercel.
+Aplicação web para catalogar e organizar filmes e séries, com backend serverless hospedado no Vercel e banco de dados Supabase (PostgreSQL).
 
 ## 🚀 Tecnologias
 
 - **Frontend:** HTML, CSS, JavaScript, Vite
 - **Backend:** Vercel Serverless Functions
-- **Banco de Dados:** Upstash Redis (Integrado ao Vercel)
+- **Banco de Dados:** Supabase (PostgreSQL)
 - **Deploy:** Vercel
 
 ## 📋 Funcionalidades
@@ -16,8 +16,7 @@ Aplicação web para catalogar e organizar filmes e séries, agora com backend s
 - ✅ Categorias customizadas
 - ✅ Painel administrativo para gerenciar conteúdo
 - ✅ Reprodução de vídeos integrada
-- ✅ Persistência de dados no Redis (rápido e simples)
-- ✅ API REST serverless
+- ✅ Persistência de dados robusta com Supabase
 
 ## 🛠️ Desenvolvimento Local
 
@@ -26,6 +25,10 @@ Aplicação web para catalogar e organizar filmes e séries, agora com backend s
 ```bash
 # Clone o repositório e instale dependências
 npm install
+
+# Configure as variáveis de ambiente no arquivo .env
+# SUPABASE_URL=...
+# SUPABASE_KEY=...
 ```
 
 ### Executar Localmente
@@ -40,32 +43,31 @@ Isso inicia:
 - Frontend: http://localhost:5173
 - Backend: http://localhost:3000
 
-## 🌐 Deploy no Vercel (Simples)
+## 🌐 Deploy no Vercel com Supabase
 
-Siga o guia rápido em [DEPLOY_VERCEL_SIMPLES.md](./DEPLOY_VERCEL_SIMPLES.md)
+Siga o guia completo em [DEPLOY_SUPABASE.md](./DEPLOY_SUPABASE.md)
 
 ### Resumo Rápido
 
-1. **Deploy:**
+1. **Crie Tabelas:**
+   - Rode o script `supabase_schema.sql` no SQL Editor do Supabase.
+
+2. **Deploy:**
    ```bash
-   npm install -g vercel
-   vercel login
    vercel
    ```
 
-2. **Configurar Banco:**
-   - No painel do Vercel, vá em **Storage**
-   - Crie um banco **Upstash Redis**
-   - Conecte ao seu projeto
+3. **Configurar Variáveis no Vercel:**
+   - Adicione `SUPABASE_URL` e `SUPABASE_KEY` nas configurações do projeto no Vercel.
 
-3. **Redeploy:**
+4. **Redeploy:**
    ```bash
    vercel --prod
    ```
 
-4. **(Opcional) Migrar Dados:**
+5. **(Opcional) Migrar Dados Locais:**
    ```bash
-   node migrate-data-redis.js
+   node migrate-data-supabase.js
    ```
 
 ## 📁 Estrutura do Projeto
@@ -73,14 +75,14 @@ Siga o guia rápido em [DEPLOY_VERCEL_SIMPLES.md](./DEPLOY_VERCEL_SIMPLES.md)
 ```
 ├── api/                    # Serverless Functions (Vercel)
 │   ├── lib/
-│   │   └── db.js          # Conexão Redis
+│   │   └── db.js          # Conexão Supabase
 │   ├── films.js           # CRUD filmes
 │   ├── ...
 ├── src/                   # Frontend
-├── data/                  # Dados locais (apenas dev)
-├── server.js              # Backend Express (dev local)
+├── data/                  # Dados locais (apenas para migração)
+├── supabase_schema.sql    # Script SQL para criar tabelas
+├── migrate-data-supabase.js # Script de migração de dados
 ├── vercel.json            # Configuração Vercel
-├── migrate-data-redis.js  # Script de migração
 └── package.json
 ```
 
